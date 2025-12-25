@@ -11,12 +11,14 @@ app = Flask(__name__)
 @app.route("/tts", methods=["POST"])
 def tts():
     data = request.json
+
     text = data.get("text", "")
+    source = data.get("source", "")  # نام منبع خبر
 
     if not text:
         return {"error": "No text provided"}, 400
 
-    # --- ساخت نام فایل از 5 کلمه اول ---
+    # --- ساخت نام فایل از 5 کلمه اول تیتر ---
     words = text.split()
     first_five = "_".join(words[:5]).lower()
     filename = f"{first_five}_....mp3"
@@ -26,15 +28,18 @@ def tts():
     tts = gTTS(text=text, lang="es")
     tts.save(tmp_path)
 
-    # --- افزودن متادیتا (Artist + Title) ---
+    # --- افزودن متادیتا (Artist + Title + Source + Genre) ---
     try:
         audio = MP3(tmp_path, ID3=EasyID3)
     except:
         audio = MP3(tmp_path)
         audio.add_tags()
 
-    audio["artist"] = "Spain News Today"   # نام کانال
-    audio["title"] = text                  # کل تیتر
+    audio["artist"] = "Spain News Today"      # نام کانال
+    audio["title"] = text                     # تیتر کامل + خلاصه
+    audio["album"] = f"Source: {source}"      # نام منبع خبر
+    audio["genre"] = "News"                   # حرفه‌ای‌تر
+
     audio.save()
 
     # --- ارسال فایل ---
