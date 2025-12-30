@@ -13,7 +13,8 @@ def tts():
     data = request.json
 
     text = data.get("text", "")
-    source = data.get("source", "")  # نام منبع خبر
+    source = data.get("source", "")
+    lang = data.get("lang", "es")  # زبان از n8n دریافت می‌شود
 
     if not text:
         return {"error": "No text provided"}, 400
@@ -25,19 +26,27 @@ def tts():
     tmp_path = f"/tmp/{filename}"
 
     # --- تولید فایل صوتی ---
-    tts = gTTS(text=text, lang="es")
+    tts = gTTS(text=text, lang=lang)
     tts.save(tmp_path)
 
-    # --- افزودن متادیتا (Artist + Title + Source + Genre) ---
+    # --- افزودن متادیتا ---
     try:
         audio = MP3(tmp_path, ID3=EasyID3)
     except:
         audio = MP3(tmp_path)
         audio.add_tags()
 
-    audio["title"] = text                     # تیتر کامل + خلاصه
-    audio["album"] = f"Source: {source}"      # نام منبع خبر
-    audio["genre"] = "News"                   # حرفه‌ای‌تر
+    # Artist بر اساس زبان
+    artist_map = {
+        "it": "Italy News Today 🇮🇹",
+        "es": "Spain News Today 🇪🇸",
+        "fr": "France News Today 🇫🇷"
+    }
+
+    audio["artist"] = artist_map.get(lang, "News Service")
+    audio["title"] = text
+    audio["album"] = f"Source: {source}"
+    audio["genre"] = "News"
 
     audio.save()
 
@@ -47,5 +56,3 @@ def tts():
 @app.route("/")
 def home():
     return "TTS Server is running"
-
-
