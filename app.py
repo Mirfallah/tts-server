@@ -35,7 +35,6 @@ def tts():
         audio = MP3(tmp_path)
         audio.add_tags()
 
-    audio["artist"] = f"Spain News Today | Source: {source}"    # نام کانال
     audio["title"] = text                     # تیتر کامل + خلاصه
     audio["album"] = f"Source: {source}"      # نام منبع خبر
     audio["genre"] = "News"                   # حرفه‌ای‌تر
@@ -48,4 +47,5 @@ def tts():
 @app.route("/")
 def home():
     return "TTS Server is running"
+
 
